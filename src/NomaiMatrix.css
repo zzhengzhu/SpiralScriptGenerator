@@ -1,0 +1,23 @@
+.matrix {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .row {
+    display: flex;
+  }
+  
+  .cell {
+    width: 60px; /* Adjust size as needed */
+    height: 60px; /* Adjust size as needed */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 5px;
+    border: 1px solid black; /* Simplistic style */
+    border-radius: 30%; /* Rounded to mimic glyphs */
+    font-family: 'Arial', sans-serif; /* Placeholder, find a more fitting font */
+  }
+  
