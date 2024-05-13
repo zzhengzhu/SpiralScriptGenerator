@@ -1,20 +1,21 @@
 import React from 'react';
-import NomaiMatrix from './NomaiMatrix';
+import SpiralTextNode from './SpiralTextNode';
 
-function App() {
-  const [matrix] = React.useState([
-    "Central Idea 1 Central Idea 2 Central Idea 3 Central Idea 4 Central Idea 5 Central Idea 6/////",
-    "Branch One extends this idea",
-    "Branch Two explores another aspect",
-    "Branch Three offers a contrast"
-  ]);
+const App = () => {
+  const texts = [
+    { id: '1', text: 'Root Node', flip: 1, parent: null },
+    { id: '2', text: 'First Child', flip: 1, parent: '1' },
+    { id: '3', text: 'S e c o n d C h i l d', flip: 1, parent: '2' },
+    { id: '4', text: 'Child of Second Child', flip: -1, parent: '3' }
+  ];
+
+  const rootText = texts.find(t => t.parent === null);
 
   return (
-    <div className="App">
-      <h1>Nomai Style Text Branching</h1>
-      <NomaiMatrix matrix={matrix} />
+    <div>
+      <SpiralTextNode key={rootText.id} textData={rootText} texts={texts} />
     </div>
   );
-}
+};
 
 export default App;

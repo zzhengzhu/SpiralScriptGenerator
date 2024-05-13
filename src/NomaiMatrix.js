@@ -1,54 +1,42 @@
 import React from 'react';
 
 const NomaiMatrix = ({ matrix }) => {
-  const radius = 100; // Radius of the central circle
-  const circleCircumference = 2 * Math.PI * radius;
-  const textOffset = circleCircumference / 4; // Adjust this to place text around the circle
+  const radius = 30; // Initial radius for the circle
+  const text = matrix[0]; // Assuming the first item is the text to display
+  const fontSize = 16; // Font size in pixels
+  const textLength = text.length * fontSize * 0.6; // Approx. length of text in pixels
+  const circumference = 2 * Math.PI * radius;
+  const spiralDensity = 10; // Control the density of the spiral
+
+  // Function to generate spiral path
+  const generateSpiralPath = (startRadius, length, density) => {
+    let d = `M ${startRadius} 0`; // Start at (radius, 0)
+    let angle = 0; // Initial angle
+    const totalRotations = length / circumference; // Total rotations based on text length
+    const angleStep = 0.1; // Smaller values give smoother spiral
+    const radiusIncreasePerRotation = (fontSize * density) / (2 * Math.PI); // Adjusted formula
+
+    for (let i = 0; i < totalRotations * 2 * Math.PI; i += angleStep) {
+      angle += angleStep;
+      const x = (startRadius + radiusIncreasePerRotation * angle) * Math.cos(angle);
+      const y = (startRadius + radiusIncreasePerRotation * angle) * Math.sin(angle);
+      d += ` L ${x.toFixed(2)} ${y.toFixed(2)}`;
+    }
+    return d;
+  };
+
+  const pathD = textLength > circumference ?
+                generateSpiralPath(radius, textLength, spiralDensity) :
+                `M 0 -${radius} A ${radius} ${radius} 0 1 1 0 ${radius} A ${radius} ${radius} 0 1 1 0 -${radius}`;
 
   return (
-    <svg width="800" height="800" viewBox="0 0 800 800">
-      <g transform="translate(400, 400)"> {/* Centering the group in the middle */}
-        {/* Central circle */}
-        <path
-          id="central-circle"
-          d={`M 0 -${radius} 
-          A ${radius} ${radius} 0 1 1 0 ${radius} 
-          A ${radius} ${radius} 0 1 1 0 -${radius}`}
-          fill="transparent"
-        />
-        <text fill="black">
-          <textPath href="#central-circle" startOffset={`0px`}> 
-            {/* style={{ textAnchor: 'middle' }} */}
-            {matrix[0]}
-          </textPath>
-        </text>
-
-        {/* Branching paths */}
-        {matrix.slice(1).map((text, i) => {
-          // Calculate angle for even distribution along the upper half of the circle
-          const angle = (Math.PI / (matrix.length - 1)) * i - Math.PI / 2;
-          const startX = radius * Math.cos(angle);
-          const startY = radius * Math.sin(angle);
-          const controlX = startX + 100 * Math.cos(angle - Math.PI / 2); // Move control point perpendicular
-          const controlY = startY + 100 * Math.sin(angle - Math.PI / 2);
-
-          return (
-            <React.Fragment key={i}>
-              <path
-                id={`branch-path-${i}`}
-                d={`M ${startX} ${startY} Q ${controlX} ${controlY} ${startX + 150 * Math.cos(angle - Math.PI / 2)} ${startY + 150 * Math.sin(angle - Math.PI / 2)}`}
-                fill="transparent"
-                stroke="none" // Ensure no visible line for the path
-              />
-              <text fill="black">
-                <textPath href={`#branch-path-${i}`} startOffset="5%" style={{ textAnchor: 'start' }}>
-                  {text}
-                </textPath>
-              </text>
-            </React.Fragment>
-          );
-        })}
-      </g>
+    <svg width="800" height="800" viewBox="-400 -400 800 800">
+      <path id="text-path" d={pathD} fill="transparent" stroke="red" />
+      <text>
+        <textPath href="#text-path" startOffset="0">
+          {text}
+        </textPath>
+      </text>
     </svg>
   );
 };
