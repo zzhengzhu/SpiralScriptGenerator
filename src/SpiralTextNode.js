@@ -1,38 +1,67 @@
-import React from 'react';
-import SpiralText from './SpiralText';
+import React, { useState } from "react";
+import SpiralText from "./SpiralText";
 
-const radius = 20;
-const fontSize = 16; // Font size in pixels
-const density = 0.2; // Control the density of the spiral
+const SpiralTextNode = ({ textData }) => {
+  // Initialize state based on parentCoordinates or default to an offset position
+  const [position, setPosition] = useState({
+    x: textData.x ? textData.x : 0,
+    y: textData.y ? textData.y : 0,
+  });
 
-const SpiralTextNode = ({ textData, texts, parentCoordinates }) => {
-   // Calculate "center" of the spiral (this is a simplification)
-   const centerX = parentCoordinates ? parentCoordinates.x : 0;
-   const centerY = parentCoordinates ? parentCoordinates.y : 0;
- 
-   // Calculate new coordinates for this node
-   const newCoordinates = { x: centerX + 60, y: centerY }; // Adjust calculation as needed
- 
-   const children = texts.filter(t => t.parent === textData.id);
- 
-   return (
-     <div style={{ position: 'absolute', left: `${newCoordinates.x}px`, top: `${newCoordinates.y}px` }}>
-      <SpiralText 
-        id={textData.id} 
-        text={textData.text} 
-        radius={radius} 
-        fontSize={fontSize} 
-        density={density} 
-        onCalculate={({ endPoint, direction }) => {
-          console.log("Endpoint:", endPoint, "Direction:", direction);
-        }}
+  const handleMouseDown = (event) => {
+    event.preventDefault(); // Prevent default to avoid dragging images or selections
+
+    const svg = document.querySelector('svgroot' + textData.id);; // This should be the clicked SVG element
+
+    // Convert the screen coordinates to the local SVG coordinate system
+    const pt = svg.createSVGPoint();
+    pt.x = event.clientX;
+    pt.y = event.clientY;
+    const startPoint = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+    // Attach mousemove and mouseup handlers to the window to handle dragging out of bounds
+    const handleMouseMove = (moveEvent) => {
+      const ptMove = svg.createSVGPoint();
+      ptMove.x = moveEvent.clientX;
+      ptMove.y = moveEvent.clientY;
+      const movePoint = ptMove.matrixTransform(svg.getScreenCTM().inverse());
+
+      setPosition({
+        x: position.x + (movePoint.x - startPoint.x),
+        y: position.y + (movePoint.y - startPoint.y),
+      });
+      startPoint.x = movePoint.x; // Update start point for the next move
+      startPoint.y = movePoint.y;
+    };
+
+    const handleMouseUp = () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  };
+
+  return (
+    <div
+      id={textData.id}
+      style={{
+        position: "absolute",
+        left: `${position.x}px`,
+        top: `${position.y}px`
+      }}
+    >
+      <SpiralText
+        id={textData.id}
+        text={textData.text}
+        radius={20}
+        fontSize={16}
+        density={textData.density}
         flip={textData.flip}
       />
-      {children.map(child => (
-        <SpiralTextNode key={child.id} textData={child} texts={texts} parentCoordinates={newCoordinates} />
-      ))}
-     </div>
-   );
- };
+    </div>
+  );
+};
 
 export default SpiralTextNode;
